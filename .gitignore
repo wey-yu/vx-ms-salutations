@@ -1,0 +1,17 @@
+
+.idea/
+.vertx/
+/out/
+
+infos.txt
+
+### Scala template
+*.class
+*.log
+
+dump.rdb
+
+/target/
+
+/project/target/*
+
