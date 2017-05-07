@@ -9,29 +9,17 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 object Salutations {
-  def main(args: Array[String]) {
 
-    val vertx = Vertx.vertx()
-    val server = vertx.createHttpServer()
-    val router = Router.router(vertx)
+  val vertx = Vertx.vertx()
 
-    val redisHost = sys.env.get("REDIS_HOST") match {
-      case None => "127.0.0.1"
-      case Some(host) => host
-    }
-    val redisPort = sys.env.get("REDIS_PORT") match {
-      case None => 6379
-      case Some(port) => port.toInt
-    }
-    val redisAuth = sys.env.get("REDIS_PASSWORD") match {
-      case None => null
-      case Some(auth) => auth
-    }
-    val redisRecordsKey = sys.env.get("REDIS_RECORDS_KEY") match {
-      case None => "scala-records"
-      case Some(key) => key
-    }
+  def discovery = {
+    // Settings for the Redis backend
+    val redisHost = sys.env.get("REDIS_HOST").getOrElse("127.0.0.1")
+    val redisPort = sys.env.get("REDIS_PORT").getOrElse("6379").toInt
+    val redisAuth = sys.env.get("REDIS_PASSWORD").getOrElse(null)
+    val redisRecordsKey = sys.env.get("REDIS_RECORDS_KEY").getOrElse("scala-records")
 
+    // Mount the service discovery backend (Redis)
     val discovery = ServiceDiscovery.create(vertx, ServiceDiscoveryOptions()
       .setBackendConfiguration(
         new JsonObject()
@@ -42,17 +30,18 @@ object Salutations {
       )
     )
 
-    val serviceName = sys.env.get("SERVICE_NAME") match {
-      case None => "salutations"
-      case Some(name) => name
-    }
+    // Settings for record the service
+    val serviceName = sys.env.get("SERVICE_NAME").getOrElse("hello")
+    //val serviceHost = sys.env.get("SERVICE_HOST").getOrElse("localhost") // domain name
+    //val servicePort = sys.env.get("SERVICE_PORT").getOrElse("8080").toInt // set to 80 on Clever Cloud
+    val serviceRoot = sys.env.get("SERVICE_ROOT").getOrElse("/api")
 
-
+    /* tips to set automatically host and port */
     val serviceHost = sys.env.get("SERVICE_HOST") match {
       case None => {
         sys.env.get("APP_ID")  match {
           case None => "localhost"
-          case Some(value) => value.replace("_", "-") + ".cleverapps.io"
+          case Some(value) => value.replace("_", "-") + ".cleverapps.io" // get the generated domain name
         }
       }
       case Some(host) => host
@@ -67,35 +56,49 @@ object Salutations {
       }
       case Some(port) => port.toInt
     }
-    val serviceRoot = sys.env.get("SERVICE_ROOT") match {
-      case None => "/api"
-      case Some(root) => root
-    }
-
+    
+    // create the microservice record
     val record = HttpEndpoint.createRecord(
       serviceName,
       serviceHost,
       servicePort,
       serviceRoot
     )
+    // add meta data for details ... if you want, eg if you have several routes
+    record.setMetadata(
+      new JsonObject()
+        .put(
+          "services",
+          new JsonArray().add("/yo").add("/hi")
+        )
+      )
+
+    // search the service before?
 
     discovery.publishFuture(record).onComplete{
-      case Success(result) => println(s"publication OK")
-      case Failure(cause) => println(s"publication KO $cause")
+      case Success(result) => println(s"😃 publication OK")
+      case Failure(cause) => println(s"😡 publication KO: $cause")
     }
+    // TODO: retry when failure
+    // discovery.close() // or not
+  }
 
-    discovery.close()
+  def main(args: Array[String]): Unit = {
 
-    val httpPort = sys.env.get("PORT") match { // internal port has to be set to 8080 on CC
-      case None => 8080
-      case Some(port) => port.toInt
-    }
+    val server = vertx.createHttpServer()
+    val router = Router.router(vertx)
 
+    // use redis backend to publish service informations
+    discovery
+
+    val httpPort = sys.env.get("PORT").getOrElse("8080").toInt
+
+    // my services
     router.get("/api/yo").handler(context => {
       context
         .response()
         .putHeader("content-type", "application/json;charset=UTF-8")
-        .end(new JsonObject().put("message", "Yo 😃").encodePrettily())
+        .end(new JsonObject().put("message", "Yo 🐻").encodePrettily())
     })
 
     router.get("/api/hi").handler(context => {
@@ -105,6 +108,7 @@ object Salutations {
         .end(new JsonObject().put("message", "Hi 🐼").encodePrettily())
     })
 
+    // home page
     router.get("/").handler(context => {
       context
         .response()
@@ -112,8 +116,7 @@ object Salutations {
         .end("<h1>Hello 🌍</h1>")
     })
 
-    println(s"🌍 Listening on $httpPort - Enjoy 😄")
+    println(s"🌍 Listening on  - Enjoy 😄")
     server.requestHandler(router.accept _).listen(httpPort)
-
   }
 }
