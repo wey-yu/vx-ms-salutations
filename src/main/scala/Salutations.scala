@@ -91,21 +91,21 @@ object Salutations {
       case Some(port) => port.toInt
     }
 
-    router.route("/api/yo").handler(context => {
+    router.get("/api/yo").handler(context => {
       context
         .response()
         .putHeader("content-type", "application/json;charset=UTF-8")
         .end(new JsonObject().put("message", "Yo 😃").encodePrettily())
     })
 
-    router.route("/api/hi").handler(context => {
+    router.get("/api/hi").handler(context => {
       context
         .response()
         .putHeader("content-type", "application/json;charset=UTF-8")
         .end(new JsonObject().put("message", "Hi 🐼").encodePrettily())
     })
 
-    router.route("/").handler(context => {
+    router.get("/").handler(context => {
       context
         .response()
         .putHeader("content-type", "text/html;charset=UTF-8")
