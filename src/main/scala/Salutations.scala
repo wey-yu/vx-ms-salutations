@@ -117,7 +117,7 @@ object Salutations {
         .end("<h1>Hello 🌍</h1>")
     })
 
-    println(s"🌍 Listening on  - Enjoy 😄")
+    println(s"🌍 Listening on $httpPort - Enjoy 😄")
     server.requestHandler(router.accept _).listen(httpPort)
   }
 }
