@@ -99,14 +99,14 @@ object Salutations {
       context
         .response()
         .putHeader("content-type", "application/json;charset=UTF-8")
-        .end(new JsonObject().put("message", "Yo 🐻").encodePrettily())
+        .end(new JsonObject().put("message", "Yo 🐻 ❤️ 🍯").encodePrettily())
     })
 
     router.get("/api/hi").handler(context => {
       context
         .response()
         .putHeader("content-type", "application/json;charset=UTF-8")
-        .end(new JsonObject().put("message", "Hi 🐼").encodePrettily())
+        .end(new JsonObject().put("message", "Hi 🐼 ❤️ 🌿").encodePrettily())
     })
 
     // home page
