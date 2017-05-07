@@ -2,6 +2,7 @@
 Microservice with Vert-x and Scala + Redis ServiceDiscoveryBackend
 
 ```
-SERVICE_NAME="salutations"
-SERVICE_ROOT="/api"
+# don't surround with double quotes
+SERVICE_NAME=salutations
+SERVICE_ROOT=/api
 ```
