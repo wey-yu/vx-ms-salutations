@@ -1,5 +1,6 @@
 
 import io.vertx.core.json.JsonObject
+import io.vertx.core.json.JsonArray
 import io.vertx.scala.core.Vertx
 import io.vertx.scala.ext.web.Router
 import io.vertx.scala.servicediscovery.types.HttpEndpoint
